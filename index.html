@@ -16,7 +16,11 @@
   header { background: var(--ink); color: var(--paper); padding: 1.5rem 2rem; display: flex; align-items: baseline; gap: 1rem; }
   header h1 { font-family: var(--display); font-size: 2.6rem; letter-spacing: 0.05em; line-height: 1; }
   header span { font-family: var(--mono); font-size: 0.75rem; color: #999; text-transform: uppercase; letter-spacing: 0.1em; }
-
+  #key-bar { background: var(--paper2); border-bottom: 1.5px solid var(--ink); padding: 0.7rem 2rem; display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+  #key-bar label { font-family: var(--mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em; white-space: nowrap; }
+  #api-key-input { flex: 1; min-width: 200px; font-family: var(--mono); font-size: 0.8rem; padding: 6px 10px; border: 1.5px solid var(--ink); background: var(--paper); color: var(--ink); outline: none; border-radius: 2px; }
+  #api-key-input:focus { border-color: #1a6bc8; }
+  #key-status { font-family: var(--mono); font-size: 0.7rem; color: #666; }
   main { max-width: 680px; margin: 0 auto; padding: 2rem; display: flex; flex-direction: column; gap: 1.25rem; }
   .stats-row { display: grid; grid-template-columns: 1fr 1fr 1fr; border: 1.5px solid var(--ink); border-radius: 2px; overflow: hidden; }
   .stat { padding: 0.75rem 1rem; text-align: center; border-right: 1px solid var(--ink); }
@@ -47,11 +51,6 @@
   .signals-title { font-family: var(--mono); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em; color: #888; margin-bottom: 8px; }
   .signal { display: flex; gap: 8px; font-size: 0.85rem; line-height: 1.5; color: #444; margin-bottom: 6px; }
   .signal::before { content: '—'; color: #aaa; flex-shrink: 0; font-family: var(--mono); }
-  #key-bar { background: var(--paper2); border-bottom: 1.5px solid var(--ink); padding: 0.7rem 2rem; display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
-  #key-bar label { font-family: var(--mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em; white-space: nowrap; }
-  #api-key-input { flex: 1; min-width: 200px; font-family: var(--mono); font-size: 0.8rem; padding: 6px 10px; border: 1.5px solid var(--ink); background: var(--paper); color: var(--ink); outline: none; border-radius: 2px; }
-  #api-key-input:focus { border-color: #1a6bc8; }
-  #key-status { font-family: var(--mono); font-size: 0.7rem; color: #666; }
   @keyframes spin { to { transform: rotate(360deg); } }
   .spinner { width: 18px; height: 18px; border: 2px solid rgba(245,240,232,0.3); border-top-color: var(--paper); border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block; }
   @media (max-width: 600px) { header { padding: 1rem; } header h1 { font-size: 2rem; } #key-bar { padding: 0.7rem 1rem; } main { padding: 1rem; } }
@@ -64,14 +63,14 @@
   <span>Custom Tattoo — Email Checker</span>
 </header>
 
-
-
 <div id="key-bar">
   <label for="api-key-input">API Key</label>
   <input type="password" id="api-key-input" placeholder="sk-ant-..." autocomplete="off" />
   <span id="key-status">Enter your key to get started</span>
 </div>
+
 <main>
+  <div class="stats-row">
     <div class="stat"><span class="stat-val" id="stat-total">0</span><span class="stat-label">Checked</span></div>
     <div class="stat"><span class="stat-val good" id="stat-leads">0</span><span class="stat-label">Real leads</span></div>
     <div class="stat"><span class="stat-val bad" id="stat-spam">0</span><span class="stat-label">Spam</span></div>
@@ -137,28 +136,12 @@
           max_tokens: 600,
           messages: [{
             role: 'user',
-            content: `You are a spam filter for a tattoo shop. Analyse this email. Reply ONLY with a JSON object — no markdown, no backticks.
-
-Email:
-${email}
-
-Return exactly:
-{
-  "verdict": "real_lead" | "spam" | "review",
-  "confidence": "high" | "medium" | "low",
-  "headline": "One short sentence saying what this email is",
-  "summary": "2 sentences explaining your verdict",
-  "signals": ["2-4 short reasons for your verdict"]
-}
-
-real_lead = genuine booking, tattoo enquiry, collab, supplier, press
-spam = SEO, cold sales, link building, unrelated marketing
-review = genuinely unclear`
+            content: 'You are a spam filter for a tattoo shop. Analyse this email. Reply ONLY with a JSON object, no markdown, no backticks.\n\nEmail:\n' + email + '\n\nReturn exactly:\n{\n  "verdict": "real_lead" or "spam" or "review",\n  "confidence": "high" or "medium" or "low",\n  "headline": "One short sentence saying what this email is",\n  "summary": "2 sentences explaining your verdict",\n  "signals": ["2-4 short reasons for your verdict"]\n}\n\nreal_lead = genuine booking, tattoo enquiry, collab, supplier, press\nspam = SEO, cold sales, link building, unrelated marketing\nreview = genuinely unclear'
           }]
         })
       });
 
-      if (!res.ok) { const e = await res.json(); throw new Error(e.error?.message || 'API error'); }
+      if (!res.ok) { const e = await res.json(); throw new Error(e.error?.message || 'API error ' + res.status); }
       const data = await res.json();
       const r = JSON.parse(data.content.map(i => i.text || '').join('').replace(/```json|```/g, '').trim());
 
@@ -191,9 +174,5 @@ review = genuinely unclear`
     pill.textContent = r.confidence + ' confidence';
     pill.className = 'conf-pill conf-' + r.confidence;
     document.getElementById('result-summary').textContent = r.summary;
-    document.getElementById('signals-list').innerHTML = (r.signals || []).map(s => `<div class="signal">${s}</div>`).join('');
-    document.getElementById('result').style.display = 'block';
-  }
-</script>
-</body>
-</html>
+    document.getElementById('signals-list').innerHTML = (r.signals || []).map(s => '<div class="signal">' + s + '</div>').join('');
+    document.getElementBy
