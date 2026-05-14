@@ -32,9 +32,12 @@
   textarea { width: 100%; font-family: var(--sans); font-size: 0.9rem; line-height: 1.65; padding: 12px 14px; border: 1.5px solid var(--ink); background: var(--paper); color: var(--ink); resize: vertical; min-height: 200px; outline: none; border-radius: 2px; }
   textarea:focus { border-color: #1a6bc8; }
   textarea::placeholder { color: #aaa; }
+  .btn-row { display: grid; grid-template-columns: 1fr auto; gap: 10px; }
   #analyse-btn { width: 100%; padding: 14px; font-family: var(--display); font-size: 1.4rem; letter-spacing: 0.1em; background: var(--ink); color: var(--paper); border: none; cursor: pointer; border-radius: 2px; transition: background 0.15s; display: flex; align-items: center; justify-content: center; gap: 10px; }
   #analyse-btn:hover { background: #2a2a2a; }
   #analyse-btn:disabled { background: #888; cursor: not-allowed; }
+  #clear-btn { padding: 14px 18px; font-family: var(--mono); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; background: transparent; color: #888; border: 1.5px solid #ccc; cursor: pointer; border-radius: 2px; transition: all 0.15s; white-space: nowrap; }
+  #clear-btn:hover { border-color: var(--ink); color: var(--ink); }
   #result { display: none; border: 2px solid var(--ink); border-radius: 2px; overflow: hidden; animation: fadeUp 0.2s ease; }
   @keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
   .result-header { padding: 1.25rem 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
@@ -51,6 +54,12 @@
   .signals-title { font-family: var(--mono); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em; color: #888; margin-bottom: 8px; }
   .signal { display: flex; gap: 8px; font-size: 0.85rem; line-height: 1.5; color: #444; margin-bottom: 6px; }
   .signal::before { content: '—'; color: #aaa; flex-shrink: 0; font-family: var(--mono); }
+  #history-section { display: none; }
+  .history-title { font-family: var(--mono); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.12em; color: #888; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid #ddd; }
+  .history-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border: 1px solid #e0dbd2; border-radius: 2px; margin-bottom: 6px; font-size: 0.82rem; }
+  .hist-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .hist-dot.good { background: var(--good); } .hist-dot.warn { background: var(--warn); } .hist-dot.bad { background: var(--bad); }
+  .hist-headline { font-weight: 500; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   @keyframes spin { to { transform: rotate(360deg); } }
   .spinner { width: 18px; height: 18px; border: 2px solid rgba(245,240,232,0.3); border-top-color: var(--paper); border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block; }
   @media (max-width: 600px) { header { padding: 1rem; } header h1 { font-size: 2rem; } #key-bar { padding: 0.7rem 1rem; } main { padding: 1rem; } }
@@ -81,7 +90,10 @@
     <textarea id="email-input" placeholder="Paste the full email — subject, sender, and body..."></textarea>
   </div>
 
-  <button id="analyse-btn" onclick="analyseEmail()">Check email</button>
+  <div class="btn-row">
+    <button id="analyse-btn" onclick="analyseEmail()">Check email</button>
+    <button id="clear-btn" onclick="clearAll()">Clear</button>
+  </div>
 
   <div id="result">
     <div class="result-header" id="result-header">
@@ -99,31 +111,61 @@
       </div>
     </div>
   </div>
+
+  <div id="history-section">
+    <div class="history-title">Recent</div>
+    <div id="history-list"></div>
+  </div>
 </main>
 
 <script>
-  let stats = { total: 0, leads: 0, spam: 0 };
+  var stats = { total: 0, leads: 0, spam: 0 };
+  var history = [];
+
+  // Load saved key
+  var savedKey = localStorage.getItem('drinkwells_apikey');
+  if (savedKey) {
+    document.getElementById('api-key-input').value = savedKey;
+    document.getElementById('key-status').textContent = '✓ Ready';
+    document.getElementById('key-status').style.color = '#1a7a3c';
+  }
 
   document.getElementById('api-key-input').addEventListener('input', function() {
-    const v = this.value.trim(), s = document.getElementById('key-status');
-    if (v.startsWith('sk-ant-') && v.length > 20) { s.textContent = '✓ Ready'; s.style.color = '#1a7a3c'; }
-    else if (v.length > 0) { s.textContent = 'Key looks incomplete'; s.style.color = '#b56a00'; }
-    else { s.textContent = 'Enter your key to get started'; s.style.color = '#666'; }
+    var v = this.value.trim(), s = document.getElementById('key-status');
+    if (v.startsWith('sk-ant-') && v.length > 20) {
+      s.textContent = '✓ Ready';
+      s.style.color = '#1a7a3c';
+      localStorage.setItem('drinkwells_apikey', v);
+    } else if (v.length > 0) {
+      s.textContent = 'Key looks incomplete';
+      s.style.color = '#b56a00';
+      localStorage.removeItem('drinkwells_apikey');
+    } else {
+      s.textContent = 'Enter your key to get started';
+      s.style.color = '#666';
+      localStorage.removeItem('drinkwells_apikey');
+    }
   });
 
+  function clearAll() {
+    document.getElementById('email-input').value = '';
+    document.getElementById('result').style.display = 'none';
+    document.getElementById('email-input').focus();
+  }
+
   async function analyseEmail() {
-    const email = document.getElementById('email-input').value.trim();
-    const apiKey = document.getElementById('api-key-input').value.trim();
+    var email = document.getElementById('email-input').value.trim();
+    var apiKey = document.getElementById('api-key-input').value.trim();
     if (!email) { alert('Paste an email first.'); return; }
     if (!apiKey) { alert('Enter your Anthropic API key first.'); return; }
 
-    const btn = document.getElementById('analyse-btn');
+    var btn = document.getElementById('analyse-btn');
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner"></span> Checking...';
     document.getElementById('result').style.display = 'none';
 
     try {
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
+      var res = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -136,14 +178,14 @@
           max_tokens: 600,
           messages: [{
             role: 'user',
-            content: 'You are a spam filter for a tattoo shop. Analyse this email. Reply ONLY with a JSON object, no markdown, no backticks.\n\nEmail:\n' + email + '\n\nReturn exactly:\n{\n  "verdict": "real_lead" or "spam" or "review",\n  "confidence": "high" or "medium" or "low",\n  "headline": "One short sentence saying what this email is",\n  "summary": "2 sentences explaining your verdict",\n  "signals": ["2-4 short reasons for your verdict"]\n}\n\nreal_lead = genuine booking, tattoo enquiry, collab, supplier, press\nspam = SEO, cold sales, link building, unrelated marketing\nreview = genuinely unclear'
+            content: 'You are a spam filter for a tattoo shop called Dr Ink Well\'s Custom Tattoo. Analyse this email. Reply ONLY with a JSON object, no markdown, no backticks.\n\nEmail:\n' + email + '\n\nReturn exactly:\n{\n  "verdict": "real_lead" or "spam" or "review",\n  "confidence": "high" or "medium" or "low",\n  "headline": "One short sentence saying what this email is",\n  "summary": "2 sentences explaining your verdict",\n  "signals": ["2-4 short reasons for your verdict"]\n}\n\nreal_lead = genuine booking, tattoo enquiry, flash day invite, guest spot request, convention invite, collab with another artist, supplier, press or media\nspam = SEO, cold sales, link building, unrelated marketing, software trials, generic newsletters\nreview = genuinely unclear'
           }]
         })
       });
 
-      if (!res.ok) { const e = await res.json(); throw new Error(e.error?.message || 'API error ' + res.status); }
-      const data = await res.json();
-      const r = JSON.parse(data.content.map(function(i) { return i.text || ''; }).join('').replace(/```json|```/g, '').trim());
+      if (!res.ok) { var e = await res.json(); throw new Error(e.error?.message || 'API error ' + res.status); }
+      var data = await res.json();
+      var r = JSON.parse(data.content.map(function(i) { return i.text || ''; }).join('').replace(/```json|```/g, '').trim());
 
       showResult(r);
       stats.total++;
@@ -152,6 +194,7 @@
       document.getElementById('stat-total').textContent = stats.total;
       document.getElementById('stat-leads').textContent = stats.leads;
       document.getElementById('stat-spam').textContent = stats.spam;
+      addHistory(r);
 
     } catch (err) { alert('Error: ' + err.message); }
 
@@ -176,6 +219,16 @@
     document.getElementById('result-summary').textContent = r.summary;
     document.getElementById('signals-list').innerHTML = (r.signals || []).map(function(s) { return '<div class="signal">' + s + '</div>'; }).join('');
     document.getElementById('result').style.display = 'block';
+  }
+
+  function addHistory(r) {
+    history.unshift(r);
+    if (history.length > 5) history.pop();
+    var dotClass = { real_lead: 'good', spam: 'bad', review: 'warn' };
+    document.getElementById('history-section').style.display = 'block';
+    document.getElementById('history-list').innerHTML = history.map(function(h) {
+      return '<div class="history-item"><span class="hist-dot ' + (dotClass[h.verdict] || 'warn') + '"></span><span class="hist-headline">' + h.headline + '</span></div>';
+    }).join('');
   }
 </script>
 </body>
