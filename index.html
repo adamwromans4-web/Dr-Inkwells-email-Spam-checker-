@@ -13,21 +13,26 @@
     --sans: 'DM Sans', sans-serif; --mono: 'DM Mono', monospace; --display: 'Bebas Neue', sans-serif;
   }
   body { background: var(--paper); color: var(--ink); font-family: var(--sans); min-height: 100vh; }
-  header { background: var(--ink); color: var(--paper); padding: 1.5rem 2rem; display: flex; align-items: baseline; gap: 1rem; }
+  header { background: var(--ink); color: var(--paper); padding: 1.5rem 2rem; display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
   header h1 { font-family: var(--display); font-size: 2.6rem; letter-spacing: 0.05em; line-height: 1; }
   header span { font-family: var(--mono); font-size: 0.75rem; color: #999; text-transform: uppercase; letter-spacing: 0.1em; }
+  .tab-bar { display: flex; border-bottom: 1.5px solid var(--ink); background: var(--paper2); }
+  .tab { font-family: var(--mono); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; padding: 0.8rem 1.5rem; cursor: pointer; border: none; background: transparent; color: #888; border-bottom: 2px solid transparent; margin-bottom: -1.5px; transition: all 0.15s; }
+  .tab.active { color: var(--ink); border-bottom-color: var(--ink); }
+  .tab:hover { color: var(--ink); }
+  .page { display: none; max-width: 720px; margin: 0 auto; padding: 2rem; }
+  .page.active { display: flex; flex-direction: column; gap: 1.25rem; }
   #key-bar { background: var(--paper2); border-bottom: 1.5px solid var(--ink); padding: 0.7rem 2rem; display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
   #key-bar label { font-family: var(--mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em; white-space: nowrap; }
   #api-key-input { flex: 1; min-width: 200px; font-family: var(--mono); font-size: 0.8rem; padding: 6px 10px; border: 1.5px solid var(--ink); background: var(--paper); color: var(--ink); outline: none; border-radius: 2px; }
   #api-key-input:focus { border-color: #1a6bc8; }
   #key-status { font-family: var(--mono); font-size: 0.7rem; color: #666; }
-  main { max-width: 680px; margin: 0 auto; padding: 2rem; display: flex; flex-direction: column; gap: 1.25rem; }
-  .stats-row { display: grid; grid-template-columns: 1fr 1fr 1fr; border: 1.5px solid var(--ink); border-radius: 2px; overflow: hidden; }
+  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); border: 1.5px solid var(--ink); border-radius: 2px; overflow: hidden; }
   .stat { padding: 0.75rem 1rem; text-align: center; border-right: 1px solid var(--ink); }
   .stat:last-child { border-right: none; }
   .stat-val { font-family: var(--display); font-size: 2rem; line-height: 1; display: block; }
-  .stat-val.good { color: var(--good); } .stat-val.bad { color: var(--bad); }
-  .stat-label { font-family: var(--mono); font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; color: #666; margin-top: 2px; display: block; }
+  .stat-val.good { color: var(--good); } .stat-val.bad { color: var(--bad); } .stat-val.warn { color: var(--warn); }
+  .stat-label { font-family: var(--mono); font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.1em; color: #666; margin-top: 2px; display: block; }
   label.field { font-family: var(--mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em; color: #555; display: block; margin-bottom: 6px; }
   textarea { width: 100%; font-family: var(--sans); font-size: 0.9rem; line-height: 1.65; padding: 12px 14px; border: 1.5px solid var(--ink); background: var(--paper); color: var(--ink); resize: vertical; min-height: 200px; outline: none; border-radius: 2px; }
   textarea:focus { border-color: #1a6bc8; }
@@ -54,22 +59,73 @@
   .signals-title { font-family: var(--mono); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em; color: #888; margin-bottom: 8px; }
   .signal { display: flex; gap: 8px; font-size: 0.85rem; line-height: 1.5; color: #444; margin-bottom: 6px; }
   .signal::before { content: '—'; color: #aaa; flex-shrink: 0; font-family: var(--mono); }
+  /* Recent history */
   #history-section { display: none; }
   .history-title { font-family: var(--mono); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.12em; color: #888; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid #ddd; }
   .history-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border: 1px solid #e0dbd2; border-radius: 2px; margin-bottom: 6px; font-size: 0.82rem; }
   .hist-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
   .hist-dot.good { background: var(--good); } .hist-dot.warn { background: var(--warn); } .hist-dot.bad { background: var(--bad); }
+  .hist-text { flex: 1; overflow: hidden; }
   .hist-headline { font-weight: 500; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .hist-time { font-family: var(--mono); font-size: 0.65rem; color: #aaa; }
+  /* Leads page */
+  .leads-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+  .leads-toolbar h2 { font-family: var(--display); font-size: 1.8rem; letter-spacing: 0.05em; }
+  .export-btn { font-family: var(--mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em; padding: 8px 14px; background: var(--ink); color: var(--paper); border: none; cursor: pointer; border-radius: 2px; transition: background 0.15s; }
+  .export-btn:hover { background: #2a2a2a; }
+  .empty-leads { text-align: center; padding: 3rem; font-family: var(--mono); font-size: 0.8rem; color: #aaa; text-transform: uppercase; letter-spacing: 0.1em; border: 1.5px dashed #ccc; border-radius: 2px; }
+  .lead-card { border: 1.5px solid var(--ink); border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
+  .lead-card-header { padding: 0.9rem 1rem; background: #d4f0de; border-bottom: 1px solid #b0d8c0; display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
+  .lead-card-header.contacted { background: var(--paper2); border-bottom-color: #ccc; }
+  .lead-headline { font-family: var(--display); font-size: 1.2rem; letter-spacing: 0.03em; line-height: 1.1; flex: 1; }
+  .lead-meta { font-family: var(--mono); font-size: 0.65rem; color: #888; margin-top: 3px; }
+  .lead-actions { display: flex; gap: 8px; flex-shrink: 0; align-items: center; }
+  .contacted-btn { font-family: var(--mono); font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.08em; padding: 5px 10px; border-radius: 2px; border: 1px solid var(--good); color: var(--good); background: transparent; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+  .contacted-btn.done { background: var(--good); color: white; }
+  .contacted-btn:hover { background: var(--good); color: white; }
+  .delete-btn { font-family: var(--mono); font-size: 0.65rem; padding: 5px 8px; border-radius: 2px; border: 1px solid #ccc; color: #aaa; background: transparent; cursor: pointer; transition: all 0.15s; }
+  .delete-btn:hover { border-color: var(--bad); color: var(--bad); }
+  .lead-body { padding: 0.9rem 1rem; background: white; }
+  .lead-summary { font-size: 0.85rem; line-height: 1.6; color: #444; margin-bottom: 10px; }
+  .notes-label { font-family: var(--mono); font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; color: #888; margin-bottom: 5px; display: block; }
+  .notes-input { width: 100%; font-family: var(--sans); font-size: 0.82rem; padding: 7px 10px; border: 1px solid #ddd; border-radius: 2px; color: var(--ink); background: var(--paper); outline: none; resize: none; line-height: 1.5; }
+  .notes-input:focus { border-color: #1a6bc8; }
+  /* Daily summary */
+  .summary-box { border: 1.5px solid var(--ink); border-radius: 2px; overflow: hidden; }
+  .summary-header { background: var(--ink); color: var(--paper); padding: 0.75rem 1rem; font-family: var(--display); font-size: 1.2rem; letter-spacing: 0.05em; }
+  .summary-body { padding: 1rem; background: white; display: flex; flex-direction: column; gap: 6px; }
+  .summary-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; padding: 5px 0; border-bottom: 1px solid #f0f0f0; }
+  .summary-row:last-child { border-bottom: none; }
+  .summary-row span:first-child { color: #666; }
+  .summary-row span:last-child { font-weight: 500; font-family: var(--mono); }
   @keyframes spin { to { transform: rotate(360deg); } }
   .spinner { width: 18px; height: 18px; border: 2px solid rgba(245,240,232,0.3); border-top-color: var(--paper); border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block; }
-  @media (max-width: 600px) { header { padding: 1rem; } header h1 { font-size: 2rem; } #key-bar { padding: 0.7rem 1rem; } main { padding: 1rem; } }
+  @media (max-width: 600px) { header { padding: 1rem; } header h1 { font-size: 2rem; } #key-bar { padding: 0.7rem 1rem; } .page { padding: 1rem; } .stats-row { grid-template-columns: repeat(2, 1fr); } .stat:nth-child(2) { border-right: none; } .stat:nth-child(3) { border-top: 1px solid var(--ink); } .stat:nth-child(4) { border-top: 1px solid var(--ink); border-right: none; } }
+  #password-screen { position: fixed; inset: 0; background: var(--ink); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.5rem; z-index: 999; }
+  #password-screen h2 { font-family: var(--display); font-size: 3rem; color: var(--paper); letter-spacing: 0.05em; }
+  #password-screen p { font-family: var(--mono); font-size: 0.75rem; color: #888; text-transform: uppercase; letter-spacing: 0.1em; }
+  #password-input { font-family: var(--mono); font-size: 0.9rem; padding: 10px 14px; border: 1.5px solid #444; background: #1a1a1a; color: var(--paper); outline: none; border-radius: 2px; width: 280px; text-align: center; }
+  #password-input:focus { border-color: #888; }
+  #password-btn { font-family: var(--display); font-size: 1.3rem; letter-spacing: 0.1em; padding: 12px 32px; background: var(--paper); color: var(--ink); border: none; cursor: pointer; border-radius: 2px; transition: background 0.15s; }
+  #password-btn:hover { background: #ddd; }
+  #password-error { font-family: var(--mono); font-size: 0.72rem; color: var(--bad); text-transform: uppercase; letter-spacing: 0.1em; display: none; }
 </style>
 </head>
 <body>
 
+<div id="password-screen">
+  <h2>Dr Ink Well's</h2>
+  <p>Enter password to continue</p>
+  <input type="password" id="password-input" placeholder="Password" onkeydown="if(event.key==='Enter')checkPassword()" />
+  <button id="password-btn" onclick="checkPassword()">Enter</button>
+  <span id="password-error">Incorrect password</span>
+</div>
+
 <header>
-  <h1>Dr Ink Well's</h1>
-  <span>Custom Tattoo — Email Checker</span>
+  <div style="display:flex;align-items:baseline;gap:1rem;">
+    <h1>Dr Ink Well's</h1>
+    <span>Custom Tattoo — Email Checker</span>
+  </div>
 </header>
 
 <div id="key-bar">
@@ -78,11 +134,19 @@
   <span id="key-status">Enter your key to get started</span>
 </div>
 
-<main>
+<div class="tab-bar">
+  <button class="tab active" onclick="showTab('checker')">Check Email</button>
+  <button class="tab" onclick="showTab('leads')">Leads</button>
+  <button class="tab" onclick="showTab('summary')">Daily Summary</button>
+</div>
+
+<!-- CHECKER TAB -->
+<div class="page active" id="tab-checker">
   <div class="stats-row">
-    <div class="stat"><span class="stat-val" id="stat-total">0</span><span class="stat-label">Checked</span></div>
+    <div class="stat"><span class="stat-val" id="stat-total">0</span><span class="stat-label">Checked today</span></div>
     <div class="stat"><span class="stat-val good" id="stat-leads">0</span><span class="stat-label">Real leads</span></div>
     <div class="stat"><span class="stat-val bad" id="stat-spam">0</span><span class="stat-label">Spam</span></div>
+    <div class="stat"><span class="stat-val warn" id="stat-review">0</span><span class="stat-label">Needs review</span></div>
   </div>
 
   <div>
@@ -113,16 +177,62 @@
   </div>
 
   <div id="history-section">
-    <div class="history-title">Recent</div>
+    <div class="history-title">Recent checks</div>
     <div id="history-list"></div>
   </div>
-</main>
+</div>
+
+<!-- LEADS TAB -->
+<div class="page" id="tab-leads">
+  <div class="leads-toolbar">
+    <h2>Genuine Leads</h2>
+    <button class="export-btn" onclick="exportCSV()">Export CSV</button>
+  </div>
+  <div id="leads-list"><div class="empty-leads">No leads saved yet — check some emails!</div></div>
+</div>
+
+<!-- DAILY SUMMARY TAB -->
+<div class="page" id="tab-summary">
+  <div class="summary-box">
+    <div class="summary-header">Today's Summary</div>
+    <div class="summary-body" id="summary-body">
+      <div class="summary-row"><span>Date</span><span id="sum-date">—</span></div>
+      <div class="summary-row"><span>Emails checked</span><span id="sum-total">0</span></div>
+      <div class="summary-row"><span>Real leads found</span><span id="sum-leads">0</span></div>
+      <div class="summary-row"><span>Spam caught</span><span id="sum-spam">0</span></div>
+      <div class="summary-row"><span>Needs review</span><span id="sum-review">0</span></div>
+      <div class="summary-row"><span>Leads contacted</span><span id="sum-contacted">0</span></div>
+      <div class="summary-row"><span>Leads outstanding</span><span id="sum-outstanding">0</span></div>
+    </div>
+  </div>
+  <button class="export-btn" onclick="exportCSV()" style="align-self:flex-start;">Export leads as CSV</button>
+</div>
 
 <script>
-  var stats = { total: 0, leads: 0, spam: 0 };
-  var history = [];
+  var stats = { total: 0, leads: 0, spam: 0, review: 0 };
+  var recentHistory = [];
+  var leads = [];
+  var todayKey = new Date().toISOString().slice(0, 10);
 
-  // Load saved key
+  // Password check
+  if (sessionStorage.getItem('drinkwells_auth') !== 'ok') {
+    document.getElementById('password-screen').style.display = 'flex';
+  } else {
+    document.getElementById('password-screen').style.display = 'none';
+  }
+
+  function checkPassword() {
+    var val = document.getElementById('password-input').value;
+    if (val === 'Hulkamaniabrother69!') {
+      sessionStorage.setItem('drinkwells_auth', 'ok');
+      document.getElementById('password-screen').style.display = 'none';
+    } else {
+      document.getElementById('password-error').style.display = 'block';
+      document.getElementById('password-input').value = '';
+    }
+  }
+
+  // Load saved data
   var savedKey = localStorage.getItem('drinkwells_apikey');
   if (savedKey) {
     document.getElementById('api-key-input').value = savedKey;
@@ -130,22 +240,41 @@
     document.getElementById('key-status').style.color = '#1a7a3c';
   }
 
+  var savedLeads = localStorage.getItem('drinkwells_leads');
+  if (savedLeads) { leads = JSON.parse(savedLeads); renderLeads(); }
+
+  var savedStats = localStorage.getItem('drinkwells_stats_' + todayKey);
+  if (savedStats) {
+    stats = JSON.parse(savedStats);
+    document.getElementById('stat-total').textContent = stats.total;
+    document.getElementById('stat-leads').textContent = stats.leads;
+    document.getElementById('stat-spam').textContent = stats.spam;
+    document.getElementById('stat-review').textContent = stats.review;
+  }
+
+  updateSummary();
+
   document.getElementById('api-key-input').addEventListener('input', function() {
     var v = this.value.trim(), s = document.getElementById('key-status');
     if (v.startsWith('sk-ant-') && v.length > 20) {
-      s.textContent = '✓ Ready';
-      s.style.color = '#1a7a3c';
+      s.textContent = '✓ Ready'; s.style.color = '#1a7a3c';
       localStorage.setItem('drinkwells_apikey', v);
     } else if (v.length > 0) {
-      s.textContent = 'Key looks incomplete';
-      s.style.color = '#b56a00';
+      s.textContent = 'Key looks incomplete'; s.style.color = '#b56a00';
       localStorage.removeItem('drinkwells_apikey');
     } else {
-      s.textContent = 'Enter your key to get started';
-      s.style.color = '#666';
+      s.textContent = 'Enter your key to get started'; s.style.color = '#666';
       localStorage.removeItem('drinkwells_apikey');
     }
   });
+
+  function showTab(name) {
+    document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
+    document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+    document.getElementById('tab-' + name).classList.add('active');
+    event.target.classList.add('active');
+    if (name === 'summary') updateSummary();
+  }
 
   function clearAll() {
     document.getElementById('email-input').value = '';
@@ -178,22 +307,27 @@
           max_tokens: 600,
           messages: [{
             role: 'user',
-            content: 'You are a spam filter for a tattoo shop called Dr Ink Well\'s Custom Tattoo. Analyse this email. Reply ONLY with a JSON object, no markdown, no backticks.\n\nEmail:\n' + email + '\n\nReturn exactly:\n{\n  "verdict": "real_lead" or "spam" or "review",\n  "confidence": "high" or "medium" or "low",\n  "headline": "One short sentence saying what this email is",\n  "summary": "2 sentences explaining your verdict",\n  "signals": ["2-4 short reasons for your verdict"]\n}\n\nreal_lead = genuine booking, tattoo enquiry, flash day invite, guest spot request, convention invite, collab with another artist, supplier, press or media\nspam = SEO, cold sales, link building, unrelated marketing, software trials, generic newsletters\nreview = genuinely unclear'
+            content: 'You are a spam filter for a tattoo shop called Dr Ink Well\'s Custom Tattoo. Analyse this email. Reply ONLY with a JSON object, no markdown, no backticks.\n\nEmail:\n' + email + '\n\nReturn exactly:\n{\n  "verdict": "real_lead" or "spam" or "review",\n  "confidence": "high" or "medium" or "low",\n  "headline": "One short sentence saying what this email is",\n  "summary": "2 sentences explaining your verdict",\n  "signals": ["2-4 short reasons for your verdict"]\n}\n\nreal_lead = genuine booking, tattoo enquiry, flash day invite, guest spot request, convention invite, artist collab, supplier, press or media\nspam = SEO, cold sales, link building, unrelated marketing, software trials, generic newsletters\nreview = genuinely unclear'
           }]
         })
       });
 
-      if (!res.ok) { var e = await res.json(); throw new Error(e.error?.message || 'API error ' + res.status); }
+      if (!res.ok) { var e = await res.json(); throw new Error(e.error && e.error.message ? e.error.message : 'API error ' + res.status); }
       var data = await res.json();
       var r = JSON.parse(data.content.map(function(i) { return i.text || ''; }).join('').replace(/```json|```/g, '').trim());
+      r.time = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+      r.date = new Date().toLocaleDateString('en-GB');
 
       showResult(r);
       stats.total++;
-      if (r.verdict === 'real_lead') stats.leads++;
+      if (r.verdict === 'real_lead') { stats.leads++; saveLead(r); }
       if (r.verdict === 'spam') stats.spam++;
+      if (r.verdict === 'review') stats.review++;
       document.getElementById('stat-total').textContent = stats.total;
       document.getElementById('stat-leads').textContent = stats.leads;
       document.getElementById('stat-spam').textContent = stats.spam;
+      document.getElementById('stat-review').textContent = stats.review;
+      localStorage.setItem('drinkwells_stats_' + todayKey, JSON.stringify(stats));
       addHistory(r);
 
     } catch (err) { alert('Error: ' + err.message); }
@@ -222,13 +356,85 @@
   }
 
   function addHistory(r) {
-    history.unshift(r);
-    if (history.length > 5) history.pop();
+    recentHistory.unshift(r);
+    if (recentHistory.length > 5) recentHistory.pop();
     var dotClass = { real_lead: 'good', spam: 'bad', review: 'warn' };
     document.getElementById('history-section').style.display = 'block';
-    document.getElementById('history-list').innerHTML = history.map(function(h) {
-      return '<div class="history-item"><span class="hist-dot ' + (dotClass[h.verdict] || 'warn') + '"></span><span class="hist-headline">' + h.headline + '</span></div>';
+    document.getElementById('history-list').innerHTML = recentHistory.map(function(h) {
+      return '<div class="history-item"><span class="hist-dot ' + (dotClass[h.verdict] || 'warn') + '"></span><div class="hist-text"><div class="hist-headline">' + h.headline + '</div><div class="hist-time">' + h.time + '</div></div></div>';
     }).join('');
+  }
+
+  function saveLead(r) {
+    var lead = { id: Date.now(), headline: r.headline, summary: r.summary, date: r.date, time: r.time, contacted: false, notes: '' };
+    leads.unshift(lead);
+    localStorage.setItem('drinkwells_leads', JSON.stringify(leads));
+    renderLeads();
+  }
+
+  function renderLeads() {
+    var el = document.getElementById('leads-list');
+    if (!leads.length) { el.innerHTML = '<div class="empty-leads">No leads saved yet — check some emails!</div>'; return; }
+    el.innerHTML = leads.map(function(l) {
+      return '<div class="lead-card" id="lead-' + l.id + '">' +
+        '<div class="lead-card-header' + (l.contacted ? ' contacted' : '') + '">' +
+          '<div><div class="lead-headline">' + l.headline + '</div><div class="lead-meta">' + l.date + ' at ' + l.time + (l.contacted ? ' · Contacted ✓' : '') + '</div></div>' +
+          '<div class="lead-actions">' +
+            '<button class="contacted-btn' + (l.contacted ? ' done' : '') + '" onclick="toggleContacted(' + l.id + ')">' + (l.contacted ? '✓ Contacted' : 'Mark contacted') + '</button>' +
+            '<button class="delete-btn" onclick="deleteLead(' + l.id + ')">✕</button>' +
+          '</div>' +
+        '</div>' +
+        '<div class="lead-body">' +
+          '<p class="lead-summary">' + l.summary + '</p>' +
+          '<label class="notes-label">Notes</label>' +
+          '<textarea class="notes-input" rows="2" placeholder="Add notes here..." onchange="saveNote(' + l.id + ', this.value)">' + (l.notes || '') + '</textarea>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  function toggleContacted(id) {
+    leads = leads.map(function(l) { if (l.id === id) l.contacted = !l.contacted; return l; });
+    localStorage.setItem('drinkwells_leads', JSON.stringify(leads));
+    renderLeads();
+    updateSummary();
+  }
+
+  function deleteLead(id) {
+    if (!confirm('Remove this lead?')) return;
+    leads = leads.filter(function(l) { return l.id !== id; });
+    localStorage.setItem('drinkwells_leads', JSON.stringify(leads));
+    renderLeads();
+    updateSummary();
+  }
+
+  function saveNote(id, val) {
+    leads = leads.map(function(l) { if (l.id === id) l.notes = val; return l; });
+    localStorage.setItem('drinkwells_leads', JSON.stringify(leads));
+  }
+
+  function updateSummary() {
+    var contacted = leads.filter(function(l) { return l.contacted; }).length;
+    document.getElementById('sum-date').textContent = new Date().toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    document.getElementById('sum-total').textContent = stats.total;
+    document.getElementById('sum-leads').textContent = stats.leads;
+    document.getElementById('sum-spam').textContent = stats.spam;
+    document.getElementById('sum-review').textContent = stats.review;
+    document.getElementById('sum-contacted').textContent = contacted;
+    document.getElementById('sum-outstanding').textContent = leads.filter(function(l) { return !l.contacted; }).length;
+  }
+
+  function exportCSV() {
+    if (!leads.length) { alert('No leads to export yet!'); return; }
+    var rows = [['Date', 'Time', 'Headline', 'Summary', 'Contacted', 'Notes']];
+    leads.forEach(function(l) {
+      rows.push([l.date, l.time, '"' + l.headline.replace(/"/g, '""') + '"', '"' + l.summary.replace(/"/g, '""') + '"', l.contacted ? 'Yes' : 'No', '"' + (l.notes || '').replace(/"/g, '""') + '"']);
+    });
+    var csv = rows.map(function(r) { return r.join(','); }).join('\n');
+    var a = document.createElement('a');
+    a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+    a.download = 'drinkwells-leads-' + todayKey + '.csv';
+    a.click();
   }
 </script>
 </body>
